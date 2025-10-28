@@ -349,9 +349,34 @@ function register_kbdmouse(h, exports)
         exports.wasm_send_mouse(h, x, y, 0, event.buttons);
     }
 
+    let last_x;
+    let last_y;
+    function touchstarthandler(event) {
+        last_x = event.changedTouches[0].clientX;
+        last_y = event.changedTouches[0].clientY;
+    }
+
+    function touchmovehandler(event) {
+        event.preventDefault();
+        const touch = event.changedTouches[0];
+
+        const x = event.changedTouches[0].clientX;
+        const y = event.changedTouches[0].clientY;
+        let btn = 0;
+        if (event.changedTouches.length == 2)
+            btn = 2;
+        if (event.changedTouches.length == 3)
+            btn = 1;
+        exports.wasm_send_mouse(h, x - last_x, y - last_y, 0, btn);
+        last_x = x;
+        last_y = y;
+    }
+
     screen.addEventListener('mousemove', mousehandler);
     screen.addEventListener('mousedown', mousehandler);
     screen.addEventListener('mouseup', mousehandler);
+    screen.addEventListener('touchstart', touchstarthandler);
+    screen.addEventListener('touchmove', touchmovehandler);
 
     function kbdhandler(ev, keypress) {
         ev.preventDefault();
