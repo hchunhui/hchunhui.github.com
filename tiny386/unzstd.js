@@ -23,7 +23,6 @@ function get_unzstd(cont)
                     mem8[srcptr + i] = buf[i];
                 const dstlen = Number(instance.exports.ZSTD_decompressBound(srcptr, buf.length));
                 const dstptr = instance.exports.malloc(dstlen);
-                console.log(instance.exports.ZSTD_decompress);
                 const dstlen2 = instance.exports.ZSTD_decompress(dstptr, dstlen,
                                                                  srcptr, buf.length);
                 // todo: error
