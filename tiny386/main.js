@@ -351,9 +351,16 @@ function register_kbdmouse(h, exports)
 
     let last_x;
     let last_y;
+    let btn;
+    let touchend_time;
     function touchstarthandler(event) {
         last_x = event.changedTouches[0].clientX;
         last_y = event.changedTouches[0].clientY;
+        if (Date.now() - touchend_time < 200) {
+            btn = 1;
+        } else {
+            btn = 0;
+        }
     }
 
     function touchmovehandler(event) {
@@ -362,20 +369,23 @@ function register_kbdmouse(h, exports)
 
         const x = event.changedTouches[0].clientX;
         const y = event.changedTouches[0].clientY;
-        let btn = 0;
-        if (event.changedTouches.length == 2)
-            btn = 2;
-        if (event.changedTouches.length == 3)
-            btn = 1;
+
         exports.wasm_send_mouse(h, x - last_x, y - last_y, 0, btn);
         last_x = x;
         last_y = y;
+    }
+
+    function touchendhandler(event) {
+        btn = 0;
+        touchend_time = Date.now();
+        exports.wasm_send_mouse(h, 0, 0, 0, 0);
     }
 
     screen.addEventListener('mousemove', mousehandler);
     screen.addEventListener('mousedown', mousehandler);
     screen.addEventListener('mouseup', mousehandler);
     screen.addEventListener('touchstart', touchstarthandler);
+    screen.addEventListener('touchend', touchendhandler);
     screen.addEventListener('touchmove', touchmovehandler);
 
     function kbdhandler(ev, keypress) {
@@ -453,6 +463,7 @@ function loads(files, i, cont) {
 }
 
 let sendCAD;
+let sendMR;
 
 document.getElementById('configname').value = "pwin32.ini";
 function start()
@@ -517,6 +528,11 @@ function start()
                             instance.exports.wasm_send_kbd(h2, 0, 0x53);
                             instance.exports.wasm_send_kbd(h2, 0, 0x38);
                             instance.exports.wasm_send_kbd(h2, 0, 0x1d);
+                        };
+
+                        sendMR = function () {
+                            instance.exports.wasm_send_mouse(h2, 0, 0, 0, 2);
+                            instance.exports.wasm_send_mouse(h2, 0, 0, 0, 0);
                         };
 
                         function main_loop() {
