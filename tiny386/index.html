@@ -4,10 +4,14 @@
         <title>Tiny386</title>
     </head>
     <body>
+        <h1>Tiny386</h1>
+        <h2>Webassembly Demo</h2>
         <canvas id="screen" width="720" height="480"
                 style="background-color: #000000;"></canvas>
         <p>
-        <input id="configname" readonly></input>
+        <select id="configname">
+            <option value="pwin32.ini">Win3.2</option>
+        </select>
         <button id="startkey" onclick="start()">Start</button>
         <button onclick="request_pointer_lock()">Grab</button>
         <button onclick="request_fullscreen()">Fullscreen</button>
@@ -17,5 +21,7 @@
         <textarea id="logarea" rows="20" cols="88" readonly></textarea>
         <script src="unzstd.js"></script>
         <script src="main.js"></script>
+        <h2>Win95 on ESP32-S3</h2>
+        <video controls src="esp32s3_win95.webm" width="720"></video>
     </body>
 </html>

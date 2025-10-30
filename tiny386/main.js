@@ -465,7 +465,6 @@ function loads(files, i, cont) {
 let sendCAD;
 let sendMR;
 
-document.getElementById('configname').value = "pwin32.ini";
 function start()
 {
     document.getElementById('startkey').disabled = true;
