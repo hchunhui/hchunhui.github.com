@@ -16,14 +16,23 @@
             }
             .window {
                 display: inline-block;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
             }
         </style>
     </head>
     <body>
         <hr>
-        <div class="window">
-            <div class="title-bar">
+        <div class="window" id="win1">
+            <div class="title-bar" id="tit1">
                 <div class="title-bar-text">Tiny386 / WebAssembly</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize" id="btn11"></button>
+                    <button aria-label="Maximize" id="btn12"></button>
+                    <button aria-label="Close"></button>
+                </div>
             </div>
             <div class="window-body">
                 <canvas id="screen" width="720" height="480"
@@ -47,9 +56,14 @@
         <script src="unzstd.js"></script>
         <script src="main.js"></script>
         <hr>
-        <div class="window">
-            <div class="title-bar">
+        <div class="window" id="win2">
+            <div class="title-bar" id="tit2">
                 <div class="title-bar-text">Win95 on ESP32-S3</div>
+                <div class="title-bar-controls">
+                    <button aria-label="Minimize" id="btn21"></button>
+                    <button aria-label="Maximize" id="btn22"></button>
+                    <button aria-label="Close"></button>
+                </div>
             </div>
             <div class="window-body">
                 <video src="esp32s3_win95.webm" width="720" id="video"></video>
@@ -95,6 +109,65 @@
                     playbtn.innerHTML = '&#9654;';
                 }
             });
+        </script>
+        <script>
+            let zidx = 10;
+
+            function drag(div, div1, btn1, btn2) {
+                let x, y, dragging = false;
+                div1.addEventListener('mousedown', (e) => {
+                    dragging = true;
+                    x = e.clientX - div.offsetLeft;
+                    y = e.clientY - div.offsetTop;
+                    div.style.zIndex = zidx;
+                    zidx++;
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (dragging) {
+                        div.style.left = e.clientX - x + 'px';
+                        div.style.top = e.clientY - y + 'px';
+                    }
+                });
+
+                document.addEventListener('mouseup', () => {
+                    dragging = false;
+                });
+
+                div1.addEventListener('touchstart', (e) => {
+                    dragging = true;
+                    x = e.changedTouches[0].clientX - div.offsetLeft;
+                    y = e.changedTouches[0].clientY - div.offsetTop;
+                    div.style.zIndex = zidx;
+                    zidx++;
+                });
+
+                document.addEventListener('touchend', () => {
+                    dragging = false;
+                });
+
+                document.addEventListener('touchmove', (e) => {
+                    if (dragging) {
+                        div.style.left = e.changedTouches[0].clientX - x + 'px';
+                        div.style.top = e.changedTouches[0].clientY - y + 'px';
+                    }
+                });
+
+                btn1.addEventListener('click', () => {
+                    div.style.position = 'static';
+                });
+
+                btn2.addEventListener('click', () => {
+                    div.style.position = 'absolute';
+                    div.style.left = '50px';
+                    div.style.top = '50px';
+                    div.style.zIndex = zidx;
+                    zidx++;
+                });
+            }
+
+            drag(document.getElementById('win1'), document.getElementById('tit1'), document.getElementById('btn11'), document.getElementById('btn12'));
+            drag(document.getElementById('win2'), document.getElementById('tit2'), document.getElementById('btn21'), document.getElementById('btn22'));
         </script>
     </body>
 </html>
