@@ -2,29 +2,99 @@
 <html>
     <head>
         <title>Tiny386</title>
+        <link rel="stylesheet" href="98.css"></link>
+        <style>
+            body {
+                background: #c0c0c0;
+            }
+            table {
+                background: inherit;
+            }
+            hr {
+                width: 20%;
+                margin-left: 0;
+            }
+            .window {
+                display: inline-block;
+            }
+        </style>
     </head>
     <body>
-        <h1>Tiny386</h1>
-        <h2>Webassembly Demo</h2>
-        <canvas id="screen" width="720" height="480"
-                style="background-color: #000000;"></canvas>
-        <p>
-        <select id="configname">
-            <option value="pwin32.ini">Win3.2</option>
-            <option value="jslinux.ini">JSLinux</option>
-            <option value="freedos.ini">FreeDOS</option>
-        </select>
-        <button id="startkey" onclick="start()">Start</button>
-        <button onClick="window.location.reload();">Reload</button>
-        <button onclick="request_pointer_lock()">Grab</button>
-        <button onclick="request_fullscreen()">Fullscreen</button>
-        <button onclick="sendCAD()">CtrlAltDel</button>
-        <button onclick="sendMR()">RightClick</button>
-        </p>
-        <textarea id="logarea" rows="20" cols="88" readonly></textarea>
+        <hr>
+        <div class="window">
+            <div class="title-bar">
+                <div class="title-bar-text">Tiny386 / WebAssembly</div>
+            </div>
+            <div class="window-body">
+                <canvas id="screen" width="720" height="480"
+                        style="background-color: #000000;"></canvas>
+                <p>
+                    <select id="configname">
+                        <option value="pwin32.ini">Win3.2</option>
+                        <option value="jslinux.ini">JSLinux</option>
+                        <option value="freedos.ini">FreeDOS</option>
+                    </select>
+                    <button id="startkey" onclick="start()">Start</button>
+                    <button onClick="window.location.reload();">Reload</button>
+                    <button onclick="request_pointer_lock()">Grab</button>
+                    <button onclick="request_fullscreen()">Fullscreen</button>
+                    <button onclick="sendCAD()">CtrlAltDel</button>
+                    <button onclick="sendMR()">RightClick</button>
+                </p>
+                <textarea id="logarea" rows="10" cols="98" style="font-family: monospace; background: inherit;" readonly></textarea>
+            </div>
+        </div>
         <script src="unzstd.js"></script>
         <script src="main.js"></script>
-        <h2>Win95 on ESP32-S3</h2>
-        <video controls src="esp32s3_win95.webm" width="720"></video>
+        <hr>
+        <div class="window">
+            <div class="title-bar">
+                <div class="title-bar-text">Win95 on ESP32-S3</div>
+            </div>
+            <div class="window-body">
+                <video src="esp32s3_win95.webm" width="720" id="video"></video>
+                <table><tr>
+                    <td><button id="playbtn">&#9654;</button></td>
+                    <td><span id="timedisp">00:00/00:00</span></td>
+                    <td width="500"><input type="range" id="timeline" value="0" min="0" max="100" step="0.1"></td>
+                </tr></table>
+            </div>
+        </div>
+        <script>
+            const video = document.getElementById('video');
+            const playbtn = document.getElementById('playbtn');
+            const timeline = document.getElementById('timeline');
+            const timedisp = document.getElementById('timedisp');
+
+            video.addEventListener('timeupdate', () => {
+                timeline.value = (video.currentTime / video.duration) * 100;
+                function f(time) {
+                    const m = Math.floor(time / 60).toString();
+                    let s = Math.floor(time % 60);
+                    if (s < 10)
+                        s = '0' + s.toString();
+                    else
+                        s = s.toString();
+                    return m + ':' + s;
+                }
+                timedisp.textContent = f(video.currentTime) + '/' + f(video.duration);
+            });
+
+            timeline.addEventListener('input', () => {
+                video.currentTime = (timeline.value / 100) * video.duration;
+            });
+
+            playbtn.addEventListener('click', () => {
+                if (video.paused) {
+                    video.play();
+                    video.controls = true;
+                    playbtn.innerHTML = '&#9208;';
+                } else {
+                    video.pause();
+                    video.controls = false;
+                    playbtn.innerHTML = '&#9654;';
+                }
+            });
+        </script>
     </body>
 </html>
