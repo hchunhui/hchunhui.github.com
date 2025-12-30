@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>Tiny386</title>
-        <link rel="stylesheet" href="98.css"></link>
+        <link rel="stylesheet" href="98.css" />
         <style>
             body {
                 background: #c0c0c0;
@@ -57,7 +57,7 @@
         <script src="main.js"></script>
         <hr>
         <div class="window" id="win2">
-            <div class="title-bar" id="tit2">
+            <div class="title-bar inactive" id="tit2">
                 <div class="title-bar-text">Win95 on ESP32-S3</div>
                 <div class="title-bar-controls">
                     <button aria-label="Minimize" id="btn21"></button>
@@ -112,15 +112,27 @@
         </script>
         <script>
             let zidx = 10;
-
+            let zobj = document.getElementById('tit1');
             function drag(div, div1, btn1, btn2) {
                 let x, y, dragging = false;
+                function f() {
+                    if (!(zobj === undefined)) {
+                        zobj.className = "title-bar inactive";
+                    }
+                    div1.className = "title-bar";
+                    div.style.zIndex = zidx;
+                    zidx++;
+                    zobj = div1;
+                }
+
+                div.addEventListener('focusin', f);
+                div.addEventListener('mousedown', f);
+                div.addEventListener('touchstart', f);
+
                 div1.addEventListener('mousedown', (e) => {
                     dragging = true;
                     x = e.clientX - div.offsetLeft;
                     y = e.clientY - div.offsetTop;
-                    div.style.zIndex = zidx;
-                    zidx++;
                 });
 
                 document.addEventListener('mousemove', (e) => {
@@ -138,8 +150,6 @@
                     dragging = true;
                     x = e.changedTouches[0].clientX - div.offsetLeft;
                     y = e.changedTouches[0].clientY - div.offsetTop;
-                    div.style.zIndex = zidx;
-                    zidx++;
                 });
 
                 document.addEventListener('touchend', () => {
@@ -161,8 +171,6 @@
                     div.style.position = 'absolute';
                     div.style.left = '50px';
                     div.style.top = '50px';
-                    div.style.zIndex = zidx;
-                    zidx++;
                 });
             }
 
