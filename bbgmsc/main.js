@@ -282,7 +282,7 @@ function start()
             instance.exports.memory.grow(100); // 64K * 100
             mem8 = new Uint8Array(instance.exports.memory.buffer);
             const biosfile = 'bbk_bios10.nes';
-            const diskfile = 'demo.IMG';
+            const diskfile = document.getElementById('diskname').value;
             dolog('disk file ' + diskfile + '\n');
             loads([biosfile, diskfile], 0, () => {
                 const biosptr = copy_string(biosfile, instance.exports.malloc);
