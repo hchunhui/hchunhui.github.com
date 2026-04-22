@@ -1,6 +1,7 @@
 'use strict';
 
 let mem8;
+let keypress_ptr;
 
 function get_string(ptr)
 {
@@ -230,6 +231,8 @@ function register_kbdmouse(ptr)
             screen.requestPointerLock();
         }
     });
+
+    keypress_ptr = ptr;
 }
 
 const imports = {
@@ -255,7 +258,7 @@ const imports = {
     }
 };
 
-const fetchopt = { cache: 'no-store' };
+const fetchopt = { cache: 'default' };
 
 function loads(files, i, cont) {
     if (i == files.length)

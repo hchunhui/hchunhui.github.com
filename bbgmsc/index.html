@@ -3,6 +3,29 @@
     <head>
         <meta charset="UTF-8">
         <title>Emulator for BBG Multimedia Student Computer</title>
+        <style>
+          #virtual-kb {
+              position: absolute;
+              background: #d1d4d9; padding: 10px;
+              display: none; flex-direction: column; gap: 8px;
+              user-select: none; font-family: sans-serif;
+          }
+          .kb-header {
+              height: 20px; background: #abb2bb; margin: -10px -10px 5px -10px;
+              border-radius: 8px 8px 0 0; cursor: move; text-align: center;
+              font-size: 10px; color: #fff;
+          }
+          .kb-row { display: flex; justify-content: center; gap: 5px; }
+          .key {
+              background: #fff; border: none; border-radius: 4px;
+              padding: 12px 0; width: 35px; text-align: center;
+              cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          }
+          .key.space { width: 280px; }
+          .key.fkey { width: 35px; background: #abb2bb; }
+          .key.wide { width: 52.5px; background: #abb2bb; }
+          .key:active { background: #ced4da; }
+        </style>
     </head>
     <body>
         <canvas id="screen" width="256" height="240"
@@ -23,5 +46,114 @@
         </p>
         <textarea id="logarea" rows="10" cols="30" readonly></textarea>
         <script src="main.js"></script>
+
+        <div id="virtual-kb">
+          <div class="kb-header" id="kb-handle">---</div>
+          <div class="kb-row" id="row1"></div>
+          <div class="kb-row" id="row2"></div>
+          <div class="kb-row" id="row3"></div>
+          <div class="kb-row" id="row4"></div>
+          <div class="kb-row" id="row5"></div>
+          <div class="kb-row" id="row6"></div>
+        </div>
+        <script>
+          const kb = document.getElementById('virtual-kb');
+          const handle = document.getElementById('kb-handle');
+
+          const key2code = {
+              "A": 4, "B": 5, "C": 6, "D": 7, "E": 8, "F": 9, "G": 10,
+              "H": 11, "I": 12, "J": 13, "K": 14, "L": 15, "M": 16,
+              "N": 17, "O": 18, "P": 19, "Q": 20, "R": 21, "S": 22,
+              "T": 23, "U": 24, "V": 25, "W": 26, "X": 27, "Y": 28, "Z": 29,
+
+              "1": 30, "2": 31, "3": 32, "4": 33, "5": 34,
+              "6": 35, "7": 36, "8": 37, "9": 38, "0": 39,
+
+              "Enter": 40, "Esc": 41, "Back": 42, "Tab": 43, "Space": 44,
+              "-": 45, "=": 46, "[": 47, "]": 48, "\\": 49, ";": 51,
+              "'": 52, "`": 53, ",": 54, ".": 55, "/": 56, "Caps": 57,
+              "F1": 58, "F2": 59, "F3": 60, "F4": 61, "F5": 62, "F6": 63,
+              "F7": 64, "F8": 65, "F9": 66, "F10": 67, "F11": 68, "F12": 69,
+              "Home": 74, "PgUp": 75, "Del": 76, "End": 77, "PgDn": 78, "Right": 79,
+              "Left": 80, "Down": 81, "Up": 82, "Ctrl": 224, "Shift": 225, "Alt": 226,
+          };
+
+          const layout = [
+              ["Esc", "F1", "F2", "F3", "F4", "F5", "F6",
+               "F7", "F8", "F9", "F10", "F11", "F12", "PgUp", "PgDn"],
+              [..."`1234567890-=".split(""), "Back"],
+              ["Tab", ..."QWERTYUIOP[]\\".split("")],
+              ["Caps", ..."ASDFGHJKL;'".split(""), "Enter"],
+              ["Shift", ..."ZXCVBNM,./".split(""), "Up"],
+              ["Ctrl", "Alt", "Space", "Del", "Left", "Down", "Right"],
+          ];
+
+          layout.forEach((row, i) => {
+              const rowEl = document.getElementById(`row${i+1}`);
+              row.forEach(key => {
+                  const btn = document.createElement('button');
+                  if (key.length === 1)
+                      btn.className = 'key';
+                  else if (key[0] === 'F' || key == 'Esc')
+                      btn.className = 'key fkey';
+                  else if (key === 'Space')
+                      btn.className = 'key space';
+                  else
+                      btn.className = 'key wide';
+                  btn.textContent = key;
+                  btn.setAttribute('data-val', key);
+                  rowEl.appendChild(btn);
+              });
+          });
+
+          kb.onmousedown = (e) => {
+              e.preventDefault();
+              const btn = e.target.closest('button');
+              if (!btn) return;
+              const val = btn.getAttribute('data-val');
+              mem8[keypress_ptr + key2code[val]] = 1;
+          };
+
+          kb.onmouseup = (e) => {
+              e.preventDefault();
+              const btn = e.target.closest('button');
+              if (!btn) return;
+              const val = btn.getAttribute('data-val');
+              mem8[keypress_ptr + key2code[val]] = 0;
+          };
+
+          kb.addEventListener('touchstart', kb.onmousedown, { passive: false });
+          kb.addEventListener('touchend', kb.onmouseup, { passive: false });
+
+          let isDragging = false;
+          let offsetX, offsetY;
+
+          const startDrag = (e) => {
+              isDragging = true;
+              const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+              const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+              offsetX = clientX - kb.offsetLeft;
+              offsetY = clientY - kb.offsetTop;
+          };
+
+          const doDrag = (e) => {
+              if (!isDragging) return;
+              const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+              const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+              kb.style.left = (clientX - offsetX) + 'px';
+              kb.style.top = (clientY - offsetY) + 'px';
+          };
+
+          const stopDrag = () => isDragging = false;
+
+          handle.addEventListener('touchstart', startDrag, { passive: false });
+          window.addEventListener('touchmove', doDrag, { passive: false });
+          window.addEventListener('touchend', stopDrag);
+
+          handle.addEventListener('mousedown', startDrag);
+          window.addEventListener('mousemove', doDrag);
+          handle.addEventListener('mouseup', stopDrag);
+          kb.style.display = 'flex';
+        </script>
     </body>
 </html>
