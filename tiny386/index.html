@@ -46,8 +46,8 @@
                         <option value="jslinux.ini">JSLinux</option>
                         <option value="freedos.ini">FreeDOS</option>
                     </select>
-                    <button id="startkey" onclick="start()">Start</button>
-                    <button onClick="window.location.reload();">Reload</button>
+                    <button onclick="start()">Start</button>
+                    <button onClick="stop()">Stop</button>
                     <button onclick="request_pointer_lock()">Grab</button>
                     <button onclick="request_fullscreen()">Fullscreen</button>
                     <button onclick="sendCAD()">CtrlAltDel</button>
@@ -58,6 +58,63 @@
         </div>
         <script src="unzstd.js"></script>
         <script src="main.js"></script>
+        <script>
+            let inst = null;
+            function start() {
+                if (inst === null) {
+                    inst = get_tiny386(document.getElementById('screen'));
+                    const o = document.getElementById('logarea');
+                    inst.set_logger(function (s) {
+                        const len = o.value.length;
+                        if (len > 40960)
+                            o.value = o.value.substring(len - 40960, len) + s;
+                        else
+                            o.value += s;
+                        o.scrollTop = o.scrollHeight;
+                    });
+                    const inifile = document.getElementById('configname').value;
+                    inst.start(inifile);
+                }
+            }
+
+            function stop() {
+                if (inst !== null) {
+                    inst.stop();
+                    inst = null;
+                }
+            }
+
+            function request_pointer_lock()
+            {
+                const screen = document.getElementById('screen');
+                screen.tabIndex = 1;
+                screen.focus();
+                screen.requestPointerLock();
+            }
+
+            function request_fullscreen()
+            {
+                const screen = document.getElementById('screen');
+                screen.tabIndex = 1;
+                screen.focus();
+                screen.requestFullscreen();
+                screen.style.cursor = 'none';
+            }
+
+            function sendCAD() {
+                inst.send_kbd(1, 0x1d);
+                inst.send_kbd(1, 0x38);
+                inst.send_kbd(1, 0x53);
+                inst.send_kbd(0, 0x53);
+                inst.send_kbd(0, 0x38);
+                inst.send_kbd(0, 0x1d);
+            };
+
+            function sendMR() {
+                inst.send_mouse(0, 0, 0, 2);
+                inst.send_mouse(0, 0, 0, 0);
+            };
+        </script>
         <hr>
         <div class="window" id="win2">
             <div class="title-bar inactive" id="tit2">
