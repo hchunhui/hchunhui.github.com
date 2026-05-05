@@ -330,7 +330,7 @@
                     dragging = true;
                     x = e.changedTouches[0].clientX - div.offsetLeft;
                     y = e.changedTouches[0].clientY - div.offsetTop;
-                });
+                }, { passive: false });
 
                 document.addEventListener('touchend', () => {
                     dragging = false;
@@ -341,7 +341,7 @@
                         div.style.left = e.changedTouches[0].clientX - x + 'px';
                         div.style.top = e.changedTouches[0].clientY - y + 'px';
                     }
-                });
+                }, { passive: false });
 
                 if (btn1 !== null) {
                     btn1.addEventListener('click', () => {
