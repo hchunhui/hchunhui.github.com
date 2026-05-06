@@ -39,7 +39,9 @@
             <option value="005.IMG">Disk 005 英语步步高</option>
             <option value="006.IMG">Disk 006 英语单词步步高</option>
             <option value="012.IMG">Disk 012 组词大赛 原子对接</option>
+            <option value="custom">Custom</option>
         </select>
+        <input type="file" id="customdisk" style="display: none">
         </p>
         <p>
         <button onclick="start()">Start</button>
@@ -61,6 +63,35 @@
           <div class="kb-row" id="row6"></div>
         </div>
         <script>
+            'use strict';
+            let custom = null;
+            (function () {
+                const diskname = document.getElementById('diskname');
+                const customdisk = document.getElementById('customdisk');
+                function load(file) {
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        custom = new Uint8Array(e.target.result);
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
+
+                if (diskname.value === "custom") {
+                    customdisk.style.display = '';
+                    load(customdisk.files[0]);
+                }
+                diskname.addEventListener('change', function (e) {
+                    if (e.target.value === "custom")
+                        customdisk.style.display = '';
+                    else
+                        customdisk.style.display = 'none';
+                });
+                customdisk.addEventListener('change', function (e) {
+                    load(e.target.files[0]);
+                });
+            })();
+
             let inst = null;
             function start() {
                 if (inst === null) {
@@ -75,6 +106,8 @@
                         o.scrollTop = o.scrollHeight;
                     });
                     const diskfile = document.getElementById('diskname').value;
+                    if (diskfile === "custom")
+                        inst.set_file(diskfile, custom);
                     inst.start(diskfile);
                 }
             }
@@ -102,6 +135,7 @@
             }
         </script>
         <script>
+          'use strict';
           (function() {
           const kb = document.getElementById('virtual-kb');
           const handle = document.getElementById('kb-handle');
