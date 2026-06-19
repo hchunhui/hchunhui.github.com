@@ -62,6 +62,7 @@
                         <option value="micro95.ini">Micro Win95</option>
                         <option value="jslinux.ini">JSLinux</option>
                         <option value="freedos.ini">FreeDOS</option>
+                        <option value="linux-amd64.ini">Linux (amd64)</option>
                     </select>
                     <button onclick="start()">Start</button>
                     <button onClick="stop()">Stop</button>
@@ -97,7 +98,11 @@
             let inst = null;
             function start() {
                 if (inst === null) {
-                    inst = get_tiny386(document.getElementById('screen'));
+                    const inifile = document.getElementById('configname').value;
+                    wasm_name = 'tiny386.wasm';
+                    if (inifile == 'linux-amd64.ini')
+                        wasm_name = 'tinyamd64.wasm';
+                    inst = get_tiny386(document.getElementById('screen'), wasm_name);
                     const o = document.getElementById('logarea');
                     inst.set_logger(function (s) {
                         const len = o.value.length;
@@ -107,7 +112,6 @@
                             o.value += s;
                         o.scrollTop = o.scrollHeight;
                     });
-                    const inifile = document.getElementById('configname').value;
                     inst.start(inifile);
                 }
             }
