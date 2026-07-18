@@ -401,6 +401,13 @@ function register_kbdmouse(h, exports)
     });
 }
 
+let on_packet_cb_func = null;
+function on_packet_cb(buf, size)
+{
+    if (on_packet_cb_func !== null)
+        on_packet_cb_func(mem8.slice(buf, buf + size));
+}
+
 const imports = {
     env: {
         __abort,
@@ -421,6 +428,8 @@ const imports = {
         tan: Math.tan,
         atan2: Math.atan2,
         round: Math.round,
+        // new: networking
+        on_packet_cb
     }
 };
 
@@ -505,6 +514,62 @@ function start(inifile)
                         dummysrc.connect(audcb);
                         dummysrc.start();
 
+                        // networking
+                        import('tcpip').then(tcpip => {
+                            tcpip.createStack().then(stack => {
+                                stack.interfaces.createTap({
+                                    ip: '10.0.2.2/24',
+                                }).then(tap => {
+                                    const vm_read = new ReadableStream({
+                                        start: (obj) => {
+                                            on_packet_cb_func = function (buf) {
+                                                obj.enqueue(buf);
+                                            };
+                                        }
+                                    });
+
+                                    const wbuf = instance.exports.malloc(1500);
+                                    const vm_write = new WritableStream({
+                                        write: (buf) => {
+                                            for (let i = 0; i < buf.length; i++)
+                                                mem8[wbuf + i] = buf[i];
+                                            instance.exports.wasm_inject_packet(
+                                                h2, wbuf, buf.length);
+                                        }
+                                    });
+                                    tap.readable.pipeTo(vm_write);
+                                    vm_read.pipeTo(tap.writable);
+                                });
+
+                                import('@tcpip/dhcp').then(mod => {
+                                    mod.createDhcp(stack.udp).then(dhcp => {
+                                        dhcp.serve({
+                                            leaseRange: {
+                                                start: '10.0.2.15',
+                                                end: '10.0.2.31',
+                                            },
+                                            serverIdentifier: '10.0.2.2',
+                                            netmask: '255.255.255.0',
+                                            router: '10.0.2.2',
+                                            dnsServers: ['10.0.2.2'],
+                                        });
+                                    });
+                                });
+
+                                import('@tcpip/http').then(mod => {
+                                    mod.createHttp(stack.tcp).then(http => {
+                                        const handler = (request) => {
+                                            return new Response('hello from tcpip.js');
+                                        };
+                                        http.serve({
+                                            port: 80,
+                                            handler: handler
+                                        });
+                                    });
+                                });
+                            });
+                        });
+
                         running = true;
                         function main_loop() {
                             instance.exports.wasm_loop(h2);
@@ -529,6 +594,7 @@ function stop()
 {
     running = false;
     audctx.close();
+    on_packet_cb_func = null;
 }
 
 return {
