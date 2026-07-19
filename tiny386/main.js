@@ -528,9 +528,11 @@ function start(inifile)
                                         }
                                     });
 
-                                    const wbuf = instance.exports.malloc(1500);
+                                    const wbuf = instance.exports.malloc(1514);
                                     const vm_write = new WritableStream({
                                         write: (buf) => {
+                                            if (buf.length > 1514)
+                                                return;
                                             for (let i = 0; i < buf.length; i++)
                                                 mem8[wbuf + i] = buf[i];
                                             instance.exports.wasm_inject_packet(
