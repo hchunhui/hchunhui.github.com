@@ -466,7 +466,7 @@ function start(inifile)
         .then(module => new WebAssembly.Instance(module, imports))
         .then(instance1 => {
             instance = instance1;
-            instance.exports.memory.grow(1024); // 64K * 1K
+            instance.exports.memory.grow(1024*2); // 64K * 2K
             mem8 = new Uint8Array(instance.exports.memory.buffer);
             dolog('ini file ' + inifile + '\n');
             loads([inifile], 0, () => {
@@ -573,12 +573,13 @@ function start(inifile)
                         });
 
                         running = true;
-                        function main_loop() {
+                        const loopChannel = new MessageChannel();
+                        loopChannel.port1.onmessage = () => {
+                            if (!running) return;
                             instance.exports.wasm_loop(h2);
-                            if (running)
-                                setTimeout(main_loop, 0);
-                        }
-                        main_loop();
+                            loopChannel.port2.postMessage(0);
+                        };
+                        loopChannel.port2.postMessage(0);
 
                         function redraw_loop() {
                             drawfb(fbptr, width, height);
