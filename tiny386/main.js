@@ -36,9 +36,10 @@ function exit(status)
     throw new Error('wasm exit with ' + status);
 }
 
+let mticks_offset = 0;
 function __get_mticks()
 {
-    return Date.now();
+    return Date.now() + mticks_offset;
 }
 
 function dolog(s)
@@ -608,5 +609,6 @@ return {
     send_mouse: function(x, y, z, btn) {
         instance.exports.wasm_send_mouse(h2, x, y, z, btn);
     },
+    set_mticks_offset: function (off) { mticks_offset = off; },
 }
 }

@@ -63,6 +63,7 @@
                         <option value="jslinux.ini">JSLinux</option>
                         <option value="freedos.ini">FreeDOS</option>
                         <option value="linux-amd64.ini">Linux (amd64)</option>
+                        <option value="winxp.ini">WinXP RC2</option>
                     </select>
                     <button onclick="start()">Start</button>
                     <button onClick="stop()">Stop</button>
@@ -73,6 +74,7 @@
                     <button onclick="toggle_keyboard()">Keyboard</button>
                 </p>
                 <textarea id="logarea" rows="10" cols="98" style="font-family: monospace; background: inherit;" readonly></textarea>
+                <p>Disclaimer: for digital preservation and demonstration purposes only.</p>
                 <div id="progress"></div>
             </div>
         </div>
@@ -127,6 +129,8 @@
                             o.value += s;
                         o.scrollTop = o.scrollHeight;
                     });
+                    if (inifile == 'winxp.ini')
+                        inst.set_mticks_offset(998611200000 - Date.now());
                     inst.start(inifile);
                 }
             }
