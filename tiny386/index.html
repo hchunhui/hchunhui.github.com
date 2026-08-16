@@ -63,7 +63,7 @@
                         <option value="jslinux.ini">JSLinux</option>
                         <option value="freedos.ini">FreeDOS</option>
                         <option value="linux-amd64.ini">Linux (amd64)</option>
-                        <option value="winxp.ini">WinXP RC2</option>
+                        <option value="winxp.ini">WinXP pre-RTM</option>
                     </select>
                     <button onclick="start()">Start</button>
                     <button onClick="stop()">Stop</button>
@@ -120,17 +120,34 @@
                     if (inifile == 'linux-amd64.ini')
                         wasm_name = 'tinyamd64.wasm';
                     inst = get_tiny386(document.getElementById('screen'), wasm_name);
+
                     const o = document.getElementById('logarea');
-                    inst.set_logger(function (s) {
-                        const len = o.value.length;
-                        if (len > 40960)
-                            o.value = o.value.substring(len - 40960, len) + s;
-                        else
-                            o.value += s;
-                        o.scrollTop = o.scrollHeight;
+                    const logbuf = [];
+                    let rending = false;
+                    inst.set_logger(function (message) {
+                        logbuf.push(message);
+                        if (logbuf.length > 2000) {
+                            logbuf.shift();
+                        }
+
+                        if (!rending) {
+                            rending = true;
+                            requestAnimationFrame(() => {
+                                o.value = logbuf.join('');
+                                o.scrollTop = o.scrollHeight;
+                                rending = false;
+                            });
+                        }
                     });
-                    if (inifile == 'winxp.ini')
+
+                    if (inifile == 'winxp.ini') {
+                        if (!confirm(`Continue downlading (~50MB)?`)) {
+                            inst = null;
+                            return;
+                        }
                         inst.set_mticks_offset(998611200000 - Date.now());
+                    }
+
                     inst.start(inifile);
                 }
             }
