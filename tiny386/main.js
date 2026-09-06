@@ -1,6 +1,7 @@
 'use strict';
 
 function get_tiny386(screen, wasm_name) {
+if (wasm_name === undefined) wasm_name = 'tiny386.wasm';
 
 let mem8;
 let logger = null;
