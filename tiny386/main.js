@@ -468,7 +468,7 @@ function start(inifile)
         .then(module => new WebAssembly.Instance(module, imports))
         .then(instance1 => {
             instance = instance1;
-            instance.exports.memory.grow(1024*2); // 64K * 2K
+            instance.exports.memory.grow(1024*9); // 64K * 9K
             mem8 = new Uint8Array(instance.exports.memory.buffer);
             dolog('ini file ' + inifile + '\n');
             loads([inifile], 0, () => {

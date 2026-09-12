@@ -64,6 +64,7 @@
                         <option value="jslinux.ini">JSLinux</option>
                         <option value="freedos.ini">FreeDOS</option>
                         <option value="linux-amd64.ini">Linux (amd64)</option>
+                        <option value="tos.ini">TempleOS (amd64)</option>
                         <option value="doom.ini">Doom</option>
                         <option value="palt.ini">Pal 仙剑 Demo</option>
                         <option value="8088dom.ini">8088dom</option>
@@ -123,6 +124,8 @@
                     wasm_name = 'tiny386.wasm';
                     if (inifile == 'linux-amd64.ini')
                         wasm_name = 'tinyamd64.wasm';
+                    if (inifile == 'tos.ini')
+                        wasm_name = 'tinyamd64x.wasm';
                     inst = get_tiny386(document.getElementById('screen'), wasm_name);
 
                     const o = document.getElementById('logarea');
